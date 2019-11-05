@@ -1,0 +1,75 @@
+// Baruch Baruch ID 200844843
+// Baruch Gehler ID 866256
+// Group number 44
+
+class Stairs {
+
+	field Array arr;
+	field int i;
+
+	constructor Stairs new(){
+	
+		var int indexX,indexY;
+		let indexX = 0;
+		let indexY = 0;
+		let i = 0;
+		
+		let arr = Array.new(74);
+		
+		// Prints the bottom of the screen
+		while(indexY < 6){
+			while (indexX < 14){
+				let arr[i] = Square.new(63 + (indexX*32),(223-(indexY*32)),32);
+				let indexX = indexX + 1;
+				let i = i +1;
+			}
+			let indexY = indexY + 1;
+			let indexX = indexY * 2;
+		}
+		
+		let indexX = 0;
+		let indexY = 0;	
+		//Prints the top of the screen
+		while(indexY < 4){
+			while (indexX < (8-(indexY*2))){
+				let arr[i] = Square.new((indexX*32),((indexY*32)),32);
+				let indexX = indexX + 1;
+				let i = i +1;
+			}
+			let indexY = indexY + 1;
+			let indexX = 0;
+		}
+		return this;
+	}
+
+	
+	
+
+	method void dispose() {
+		var Square tempsq;
+		var int k;
+		let k = 0;
+		
+		while(k < i){
+			let tempsq = arr[k];
+			do tempsq.dispose();
+		}
+		do Memory.deAlloc(this);
+		return;
+   }
+	
+	method void anim(){
+		var int k;
+		var Square tempsq;
+		let k = 0;
+		
+		while(k < i){
+			let tempsq = arr[k];
+			do tempsq.erase();
+			do Sys.wait(2);
+			do tempsq.draw();
+			let k = k +1;
+		}
+		return;
+	}
+}

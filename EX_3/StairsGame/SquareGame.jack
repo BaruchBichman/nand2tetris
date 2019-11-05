@@ -1,0 +1,163 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/09/Square/SquareGame.jack
+
+// Baruch Baruch ID 200844843
+// Baruch Gehler ID 866256
+// Group number 44
+
+/**
+ * Implements the Square Dance game.
+ * This simple game allows the user to move a black square around
+ * the screen, and change the square's size during the movement.
+ * When the game starts, a square of 30 by 30 pixels is shown at the
+ * top-left corner of the screen. The user controls the square as follows.
+ * The 4 arrow keys are used to move the square up, down, left, and right.
+ * The 'z' and 'x' keys are used, respectively, to decrement and increment
+ * the square's size. The 'q' key is used to quit the game.
+ */
+
+class SquareGame {
+   field Square square; // the square of this game
+   field int direction; // the square's current direction: 
+                        // 0=none, 1=up, 2=down, 3=left, 4=right
+
+	field Stairs stairs;
+	field int size,speed;
+
+   /** Constructs a new Square Game. */
+   constructor SquareGame new() {
+      // Creates a 30 by 30 pixels square and positions it at the top-left
+      // of the screen.
+	  let size = 32;
+	  let speed = 5;
+      let square = Square.new(0, 223, 32);
+	  let stairs = Stairs.new();
+	  do stairs.anim();
+	  
+      do Output.moveCursor(0, 0);
+ 	  do Output.printInt(size);
+      let direction = 0;  // initial state is no movement
+      return this;
+   }
+
+   /** Disposes this game. */
+   method void dispose() {
+      do square.dispose();
+	  do stairs.dispose();
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Moves the square in the current direction. */
+   method boolean moveSquare() {
+   		var int x,y;
+		if (direction = 1) {
+
+			let x = square.getX();
+			let y = square.getY();
+			
+			if(((x < 64)&(y<128))|    // if Stuck on the stairs
+			((x>63)&(x<128)&(y<96))|
+			((x>127)&(x<192)&(y<64))|
+			((x>191)&(x<256)&(y<32))){
+				do stairs.anim();
+				do endGame(false);
+				return false;
+			}
+			else{
+					
+				if((square.moveUp())){
+					let direction = 4;
+				}	
+			}
+		}
+
+		if (direction = 4) {
+		
+			let x = square.getX() + square.getSize();
+			let y = square.getY() + square.getSize();
+			if(((x>64)&(x<128)&(y>224))|   //if Stuck on the stairs
+			  ((x>127)&(x<192)&(y>192))|
+			  ((x>191)&(x<256)&(y>160))|
+			  ((x>255)&(x<320)&(y>128))|
+			  ((x>319)&(x<384)&(y>96))|
+			  ((x>383)&(x<448)&(y>64))){
+			  
+			  do stairs.anim();
+			  do endGame(false);
+			  return false;
+			}
+			else{
+			
+				if(square.moveRight()){
+					if(size=50){			//win
+					do stairs.anim();
+					do endGame(true);
+					return false;
+					}
+					else{
+						if((size=36)|(size=40)|(size=44)|(size=48)){let speed = speed -1;} 
+						let size = size+2;
+						do Output.moveCursor(0, 0);
+						do Output.printInt(size);
+						do square.ChangeLocation(0,(255-size),(size));
+					}
+				}
+			}
+		}
+		do Sys.wait(speed);  // delays the next movement
+		return true;
+   }
+   
+   method void endGame(boolean win){
+        do Screen.clearScreen();
+		do Output.moveCursor(13,26);
+		if(win){
+			do Output.printString("You won!");
+		}
+		else{
+			do Output.printString("You lose!");
+		}
+        do Output.moveCursor(15,24);
+        do Output.printString("Game Over !!!");
+        do Output.moveCursor(16,23);
+        do Output.printString("Your score is: ");
+        do Output.printInt(size);
+		return;
+   }
+   
+   /** Runs the game: handles the user's inputs and moves the square accordingly */
+   method void run() {
+      var char key;  // the key currently pressed by the user
+      var boolean exit;
+      let exit = false;
+      
+      while (~exit) {
+         // waits for a key to be pressed
+         while (key = 0) {
+            let key = Keyboard.keyPressed();
+            if(~( moveSquare())){
+				return;
+			}
+         }
+         if (key = 81)  { let exit = true; }     // q key
+
+         if (key = 131) { let direction = 1; }   // up arrow
+         if (key = 132) { let direction = 4; }   // right arrow
+
+         // waits for the key to be released
+         while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+            if(~( moveSquare())){
+				return;
+			}
+         }
+     } // while
+     return;
+   }
+}
+
+
+
